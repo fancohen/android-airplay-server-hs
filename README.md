@@ -7,6 +7,8 @@
 > - `android_dnssd_shim.c`: `dnssd_get_airplay_txt()` / `dnssd_get_raop_txt()` return the TXT records in wire format instead of nothing, so the qualified `GET /info` (`txtAirPlay`) gets real data.
 > - `patches/UxPlay/0010-full-info-for-txtairplay-query.patch`: the qualified `GET /info` also returns the full info dictionary; older senders send no second `GET /info`.
 > - `native_bridge.cpp`: feature bit 27 ("supports legacy pairing") is only advertised when a PIN is required, as in upstream UxPlay since 1.65. Some older macOS installs fail their own keychain access during legacy pair-setup and never connect otherwise.
+> - `MainActivity.kt`: while mirroring, the window requests the display mode closest to the max FPS setting (e.g. 59.94 Hz on a TV that normally runs at 50 Hz) and releases it afterwards. The device must expose several refresh rates; on the Freebox Player Pop, turn on *Affichage → Fréquence d'affichage contrôlée par l'appli* and reboot.
+> - Dark theme by default (Android TV reports a light system theme).
 > - Debug build only (`./gradlew assembleDebug`, armeabi-v7a): app id `io.github.jqssun.airplay.hs`, default name "Salon TV", port 7100, a hardware address that differs from the stock app, and `LOGGER_INFO` native logging.
 
 [![Stars](https://img.shields.io/github/stars/jqssun/android-airplay-server)](https://github.com/jqssun/android-airplay-server)

@@ -30,7 +30,9 @@ import io.github.jqssun.airplay.viewmodel.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
+import kotlin.math.abs
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -95,6 +97,16 @@ class MainActivity : ComponentActivity() {
             }
         }
 
+        // while mirroring, ask for the display mode closest to max fps (e.g. 59.94 Hz on a
+        // 50 Hz TV); needs the device's "app-controlled refresh rate" option to expose modes
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                combine(viewModel.mirroringActive, viewModel.pref(Prefs.MAX_FPS)) { on, fps ->
+                    if (on) fps else 0
+                }.distinctUntilChanged().collect { _preferRefreshRate(it) }
+            }
+        }
+
         // auto-enter pre-declared in pip params
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             lifecycleScope.launch {
@@ -120,6 +132,18 @@ class MainActivity : ComponentActivity() {
                 )
             }
         }
+    }
+
+    // fps <= 0 hands the mode back to the system
+    private fun _preferRefreshRate(fps: Int) {
+        @Suppress("DEPRECATION")
+        val display = windowManager.defaultDisplay
+        val current = display.mode
+        val modeId = if (fps <= 0) 0 else display.supportedModes
+            .filter { it.physicalWidth == current.physicalWidth && it.physicalHeight == current.physicalHeight }
+            .minByOrNull { abs(it.refreshRate - fps) }?.modeId ?: 0
+        if (window.attributes.preferredDisplayModeId == modeId) return
+        window.attributes = window.attributes.apply { preferredDisplayModeId = modeId }
     }
 
     private fun _granted(permission: String) =
