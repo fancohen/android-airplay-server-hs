@@ -1031,7 +1031,8 @@ class AirPlayService : LifecycleService(), RaopCallbackHandler, LogListener {
             for (iface in interfaces) {
                 if (iface.name.startsWith("wlan") || iface.name.startsWith("eth")) {
                     val mac = iface.hardwareAddress
-                    if (isUsableMac(mac)) return mac!!
+                    // differ from the stock build so both can run side by side
+                    if (isUsableMac(mac)) return mac!!.copyOf().also { it[5] = (it[5].toInt() xor 0x20).toByte() }
                 }
             }
         } catch (e: Exception) {

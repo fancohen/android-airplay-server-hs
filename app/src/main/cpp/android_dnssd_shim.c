@@ -16,6 +16,7 @@
 #define MAX_TXT_ENTRIES 32
 #define MAX_TXT_KEY 32
 #define MAX_TXT_VAL 128
+#define MAX_TXT_WIRE 2048
 
 typedef struct {
     char key[MAX_TXT_KEY];
@@ -44,6 +45,10 @@ struct dnssd_s {
     char codec_cn[16]; /* dynamic "cn" value, e.g. "0,1,2,3" */
 
     char raop_servname[MAX_SERVNAME];
+
+    /* wire-format copies of the txt records, returned by GET /info txtAirPlay/txtRAOP */
+    char raop_txt[MAX_TXT_WIRE];
+    char airplay_txt[MAX_TXT_WIRE];
 };
 
 static void _txt_set(txt_record_t *rec, const char *key, const char *val) {
@@ -196,14 +201,35 @@ dnssd_register_airplay(dnssd_t *dnssd, unsigned short port)
 void dnssd_unregister_raop(dnssd_t *dnssd) {}
 void dnssd_unregister_airplay(dnssd_t *dnssd) {}
 
+/* serialize to DNS TXT wire format (length-prefixed "key=value" strings); older
+   macOS senders request this via GET /info and drop the connection if it is empty */
+static int _txt_wire(const txt_record_t *rec, char *buf, int cap) {
+    int pos = 0;
+    for (int i = 0; i < rec->count; i++) {
+        int klen = (int) strlen(rec->entries[i].key);
+        int vlen = (int) strlen(rec->entries[i].val);
+        int n = klen + 1 + vlen;
+        if (n > 255 || pos + 1 + n > cap) break;
+        buf[pos++] = (char) n;
+        memcpy(buf + pos, rec->entries[i].key, klen);
+        pos += klen;
+        buf[pos++] = '=';
+        memcpy(buf + pos, rec->entries[i].val, vlen);
+        pos += vlen;
+    }
+    return pos;
+}
+
 const char *dnssd_get_raop_txt(dnssd_t *dnssd, int *length) {
-    if (length) *length = 0;
-    return NULL;
+    int len = _txt_wire(&dnssd->raop_record, dnssd->raop_txt, sizeof(dnssd->raop_txt));
+    if (length) *length = len;
+    return dnssd->raop_txt;
 }
 
 const char *dnssd_get_airplay_txt(dnssd_t *dnssd, int *length) {
-    if (length) *length = 0;
-    return NULL;
+    int len = _txt_wire(&dnssd->airplay_record, dnssd->airplay_txt, sizeof(dnssd->airplay_txt));
+    if (length) *length = len;
+    return dnssd->airplay_txt;
 }
 
 const char *dnssd_get_name(dnssd_t *dnssd, int *length) {

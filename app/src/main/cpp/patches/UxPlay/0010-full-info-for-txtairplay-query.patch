@@ -1,0 +1,21 @@
+Return the full /info dictionary for the initial txtAirPlay query.
+
+Older macOS senders (seen with 10.13 High Sierra, AirPlay/366.76.2) send only the
+qualified GET /info and close the connection when the reply has nothing but
+txtAirPlay.
+---
+--- a/lib/raop_handlers.h
++++ b/lib/raop_handlers.h
+@@ -105,10 +105,8 @@
+         plist_dict_set_item(res_node, txtRAOP, txt_raop_node);
+     }
+   
+-    /* don't need anything below here in the response to initial  "txtAirPlay" GET/info request */
+-    if (content_type) {
+-        goto finished;
+-    }
++    /* the initial "txtAirPlay" GET/info request also gets the full info dict: older macOS
++       senders (e.g. 10.13) send no second GET/info and give up without it */
+  
+     /* deviceID is the physical hardware address, and will not change */
+     int hw_addr_raw_len = 0;

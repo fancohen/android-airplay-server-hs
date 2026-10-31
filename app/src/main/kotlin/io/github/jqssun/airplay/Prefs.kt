@@ -72,8 +72,8 @@ object Prefs {
 
     fun forced(v: String) = when (v) { ON -> true; OFF -> false; else -> null }
 
-    val SERVER_NAME = str("server_name", "Android AirPlay", restart = true)
-    val SERVER_PORT = int("server_port", 7000, 1..65535, restart = true)
+    val SERVER_NAME = str("server_name", "Salon TV", restart = true)
+    val SERVER_PORT = int("server_port", 7100, 1..65535, restart = true)
     val AUTO_START = bool("auto_start", true)
     val BOOT_AUTO_START = bool("boot_auto_start", true)
     val RUN_IN_BACKGROUND = bool("run_in_background", true)

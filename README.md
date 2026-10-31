@@ -1,5 +1,14 @@
 # AirPlay Receiver for Android
 
+> **About this fork (branch `high-sierra`)**
+>
+> A build of [jqssun/android-airplay-server](https://github.com/jqssun/android-airplay-server) v0.0.36 that also accepts screen mirroring from older macOS senders (tested with macOS 10.13 High Sierra, `AirPlay/366.76.2`, on a Freebox Player Pop). Changes:
+>
+> - `android_dnssd_shim.c`: `dnssd_get_airplay_txt()` / `dnssd_get_raop_txt()` return the TXT records in wire format instead of nothing, so the qualified `GET /info` (`txtAirPlay`) gets real data.
+> - `patches/UxPlay/0010-full-info-for-txtairplay-query.patch`: the qualified `GET /info` also returns the full info dictionary; older senders send no second `GET /info`.
+> - `native_bridge.cpp`: feature bit 27 ("supports legacy pairing") is only advertised when a PIN is required, as in upstream UxPlay since 1.65. Some older macOS installs fail their own keychain access during legacy pair-setup and never connect otherwise.
+> - Debug build only (`./gradlew assembleDebug`, armeabi-v7a): app id `io.github.jqssun.airplay.hs`, default name "Salon TV", port 7100, a hardware address that differs from the stock app, and `LOGGER_INFO` native logging.
+
 [![Stars](https://img.shields.io/github/stars/jqssun/android-airplay-server)](https://github.com/jqssun/android-airplay-server)
 [![GitHub](https://img.shields.io/github/downloads/jqssun/android-airplay-server/total?label=GitHub&logo=GitHub)](https://github.com/jqssun/android-airplay-server/releases)
 [![license](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://github.com/jqssun/android-airplay-server/blob/main/LICENSE)

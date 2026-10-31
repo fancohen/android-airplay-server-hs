@@ -68,7 +68,7 @@ Java_io_github_jqssun_airplay_bridge_NativeBridge_nativeInit(
     }
     ctx->cb_ctx.raop = ctx->raop;
 
-    raop_set_log_level(ctx->raop, LOGGER_ERR);
+    raop_set_log_level(ctx->raop, LOGGER_INFO);
     raop_set_log_callback(ctx->raop, _log_callback, NULL);
 
     const char *keyfile_c = env->GetStringUTFChars(keyFile, NULL);
@@ -102,6 +102,9 @@ Java_io_github_jqssun_airplay_bridge_NativeBridge_nativeInit(
     if (!ctx->dnssd) {
         LOGE("dnssd_init failed: %d", dns_err);
     } else {
+        /* like upstream UxPlay, only advertise legacy pairing (bit 27) when a PIN needs it;
+           senders then skip pair-setup, which fails on some older macOS keychains */
+        dnssd_set_airplay_features(ctx->dnssd, 27, requirePin ? 1 : 0);
         raop_set_dnssd(ctx->raop, ctx->dnssd);
     }
 

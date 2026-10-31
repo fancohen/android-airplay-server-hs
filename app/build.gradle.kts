@@ -52,7 +52,9 @@ android {
 
     buildTypes {
         debug {
-            ndk { abiFilters += allAbis }
+            applicationIdSuffix = ".hs"
+            versionNameSuffix = "-hs"
+            ndk { abiFilters += "armeabi-v7a" }
         }
         release {
             isMinifyEnabled = true
